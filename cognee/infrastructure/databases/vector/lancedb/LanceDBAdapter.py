@@ -469,13 +469,8 @@ class LanceDBAdapter(VectorDBInterface):
         payload_schema = type(data_points[0])
         self._mark_written(collection_name)
 
-        if not await self.has_collection(collection_name):
-            async with self.VECTOR_DB_LOCK:
-                if not await self.has_collection(collection_name):
-                    await self.create_collection(
-                        collection_name,
-                        payload_schema,
-                    )
+        # create_collection takes VECTOR_DB_LOCK itself; holding it here would deadlock.
+        await self.create_collection(collection_name, payload_schema)
 
         collection = await self.get_collection(collection_name)
 
